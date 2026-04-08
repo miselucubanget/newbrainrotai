@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brainrot AI — Thoughts Feeder Engine</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne+Mono&family=Bebas+Neue&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Cursor glow -->
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <!-- Animated background -->
+  <div class="bg-canvas">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="grid-overlay"></div>
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <!-- Floating emojis -->
+  <div class="floating-emojis" id="floatingEmojis"></div>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
+  <!-- Main wrapper -->
+  <div class="page-wrapper">
+
+    <!-- Top badge -->
+    <div class="top-badge">
+      <span class="badge-dot"></span>
+      <span>LIVE · brainrot v2.0 · now with AI images 🎨</span>
+    </div>
+
+    <!-- Main card -->
+    <div class="main-card" id="mainCard">
+
+      <!-- Card noise texture -->
+      <div class="card-noise"></div>
+
+      <!-- Glowing border -->
+      <div class="card-border-glow"></div>
+
+      <!-- Header (unchanged) -->
+      <header class="header">
+        <div class="logo-row">
+          <div class="logo-icon">
+            <span class="logo-brain">🧠</span>
+            <div class="logo-ring"></div>
+          </div>
+          <span class="logo-label">BRAINROT AI</span>
+        </div>
+
+        <h1 class="title">
+          <span class="title-word" data-text="Thoughts">Thoughts</span>
+          <span class="title-word accent" data-text="Feeder">Feeder</span>
+          <span class="title-word" data-text="Engine">Engine</span>
+        </h1>
+
+        <p class="subtitle">
+          Feed it thoughts. Watch them spiral into something unhinged.
+          Perfect place if you want to have other thoughts rather than your own overthinking<br />
+          <em>Certified Maximum Chaos🤙</em>
+        </p>
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <div class="stat"><span class="stat-num" id="chaosCount">0</span><span class="stat-label">chaos generated</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat"><span class="stat-num">∞</span><span class="stat-label">brain cells lost</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat"><span class="stat-num">100%</span><span class="stat-label">unhinged</span></div>
+        </div>
+      </header>
+
+      <!-- Input section (unchanged) -->
+      <div class="input-section">
+        <div class="input-wrapper" id="inputWrapper">
+          <div class="input-glow-border"></div>
+          <textarea
+            id="inputText"
+            placeholder="type something unhinged..."
+            rows="3"
+            maxlength="500"
+          ></textarea>
+          <div class="input-footer">
+            <span class="char-count"><span id="charCount">0</span>/500</span>
+            <div class="input-tags">
+              <span class="tag" onclick="injectPrompt('why do I exist')">existential 🌀</span>
+              <span class="tag" onclick="injectPrompt('I overthink everything at 3am')">3am brain 🌙</span>
+              <span class="tag" onclick="injectPrompt('random chaos energy')">chaos mode 💀</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate button -->
+        <button class="generate-btn" id="generateBtn" onclick="generate()">
+          <span class="btn-bg"></span>
+          <span class="btn-content">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-text">Generate Chaos</span>
+          </span>
+          <div class="btn-ripple-container" id="rippleContainer"></div>
+        </button>
+      </div>
+
+      <!-- Output section -->
+      <div class="output-section" id="outputSection">
+
+        <!-- Loading state -->
+        <div class="loading-state" id="loadingState">
+          <div class="glitch-text" id="glitchText">Generating chaos</div>
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="waveform">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+        </div>
+
+        <!-- Output bubble -->
+        <div class="output-bubble" id="outputBubble">
+          <div class="bubble-header">
+            <div class="bubble-avatar">🤖</div>
+            <span class="bubble-label">brainrot engine says:</span>
+            <div class="bubble-actions">
+              <!-- NEW: Translation toggle button -->
+              <button class="action-btn translation-btn" id="translationBtn" onclick="toggleTranslation()" style="display: none;" title="Toggle translation">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6 6-6"/><path d="M19 16H5"/></svg>
+                <span>Translate</span>
+              </button>
+              <button class="action-btn" id="copyBtn" onclick="copyResult()" title="Copy">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="action-btn" onclick="generate()" title="Regenerate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                <span>Again</span>
+              </button>
+            </div>
+          </div>
+          <div class="bubble-text" id="outputText"></div>
+          <!-- Hidden storage for brainrot text -->
+          <input type="hidden" id="brainrotText" />
+        </div>
+
+        <!-- NEW: AI Image Container -->
+        <div class="image-container" id="imageContainer" style="display: none;">
+          <div class="image-header">
+            <span class="image-label">🎨 AI Generated Visual</span>
+            <span class="image-prompt-label" id="imagePrompt"></span>
+          </div>
+          <div class="image-wrapper">
+            <div class="image-loader" id="imageLoader">
+              <div class="loading-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span>painting pixels...</span>
+            </div>
+            <img id="generatedImage" class="generated-image" alt="AI Generated" />
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>made with 💀 and questionable decisions</span>
+      <span class="footer-dot">·</span>
+      <span>brainrot ai © 2025</span>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
